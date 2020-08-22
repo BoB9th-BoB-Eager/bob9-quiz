@@ -1,0 +1,42 @@
+from telegram import Update, Bot
+from telegram.ext import Updater, MessageHandler, Filters, CallbackContext, CommandHandler
+from telegram.utils.request import Request
+
+
+def log_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as exc:
+            print(f'Error: {exc}')
+            raise exc
+
+    return wrapper
+
+
+def message_handler(update: Update, context: CallbackContext):
+    update.message.reply_text(text='Example')
+
+
+@log_error
+def greet_user(bot, update):
+    update.message.reply_text('hello')
+
+def main():
+    req = Request(connect_timeout=0.5)
+    t_bot = Bot(
+        request=req,
+        token='xxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        base_url='https://telegg.ru/orig/bot',
+    )
+    updater = Updater(bot=t_bot, use_context=True)
+
+    dp = updater.dispatcher
+    dp.add_handler(CommandHandler('start', greet_user))
+    dp.add_handler(MessageHandler(filters=Filters.all, callback=message_handler))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
